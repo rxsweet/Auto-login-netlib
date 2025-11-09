@@ -2,7 +2,7 @@ name: Netlib Keepalive
 
 on:
   schedule:
-    - cron: '0 0 */30 * *'  # 每30天运行一次（时间早上8点）
+    - cron: '0 8 1 * *'  # 每30天运行一次
   workflow_dispatch:  # 允许手动运行
 
 jobs:
@@ -29,3 +29,19 @@ jobs:
           CHAT_ID: ${{ secrets.CHAT_ID }}
           ACCOUNTS: ${{ secrets.ACCOUNTS }}
         run: npm start
+        
+      - name:  log.txt
+        env:
+          TZ: 'Asia/Hong_Kong'   # 强制使用香港时间
+        run: |
+          TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S %Z')
+          echo "[$TIMESTAMP] 登录日志：每月登录一次,自动追加" >> log.txt
+          cat log.txt   # （可选）打印确认
+          
+      - name: Commit & Push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add log.txt
+          git commit -m "登录日志: log on $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+          git push
